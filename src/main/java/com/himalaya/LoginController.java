@@ -1,9 +1,10 @@
-package com.himalaya.redisdemo;
+package com.himalaya;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpSession;
 
 @RestController
 public class LoginController {
@@ -14,5 +15,11 @@ public class LoginController {
     @GetMapping("/login")
     public String getLoginUsername() {
         return loginService.getLoginUsername();
+    }
+
+    @GetMapping("/test")
+    public void setSession(HttpSession session) {
+        System.out.println("session id :: " + session.getId());
+        session.setAttribute("test", "himalaya");
     }
 }

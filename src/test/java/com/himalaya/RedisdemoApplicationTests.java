@@ -1,4 +1,4 @@
-package com.himalaya.redisdemo;
+package com.himalaya;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

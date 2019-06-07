@@ -1,4 +1,4 @@
-package com.himalaya.redisdemo;
+package com.himalaya;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
