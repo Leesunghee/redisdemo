@@ -32,16 +32,17 @@ public class LoginServiceTest {
 
     @Test
     public void sessionIdToBase64DecodeTest() {
-        String encodedSessionId = "ZDNlY2Q1YmUtNjgyNi00MDNiLWI4Y2YtNmViZTI5NGJmZTZi";
-        assertThat(loginService.sessionIdToBase64Decode(encodedSessionId)).isEqualTo("d3ecd5be-6826-403b-b8cf-6ebe294bfe6b");
+        String encodedSessionId = "NjYzMGRlYWYtMzQxOC00MDZjLWI5N2QtYTg5Y2U4YTExM2M5";
+        assertThat(loginService.sessionIdToBase64Decode(encodedSessionId)).isEqualTo("6630deaf-3418-406c-b97d-a89ce8a113c9");
     }
 
     @Test
     public void getStoredRedisSessionTest() {
-        String encodedSessionId = "MGQwZGIyZTUtZjNlNi00YTEyLTkyNWQtZWQxOTg3M2EwNmYz";
+        String encodedSessionId = "NjYzMGRlYWYtMzQxOC00MDZjLWI5N2QtYTg5Y2U4YTExM2M5";
         Session session = sessionRepository.findById(loginService.sessionIdToBase64Decode(encodedSessionId));
 
         Assume.assumeTrue(session != null);
         assertThat((String) session.getAttribute("name")).isEqualTo("sunghee");
+        assertThat(((UserInfo) session.getAttribute("userVo")).getUsername()).isEqualTo("himalaya");
     }
 }

@@ -13,14 +13,9 @@ public class LoginController {
     @Autowired
     LoginService loginService;
 
-    @GetMapping("/getValueBySession")
-    public String getLoginUsername(@RequestParam String sessionId, @RequestParam String key) {
-        return loginService.getLoginUsername();
+    @GetMapping("/getSessionValue")
+    public String getSessionValue(@RequestParam String sessionId, @RequestParam String key) {
+        return loginService.getSessionValue(sessionId, key);
     }
 
-    @GetMapping("/test")
-    public void setSession(HttpSession session) {
-        System.out.println("session id :: " + session.getId());
-        session.setAttribute("test", "himalaya");
-    }
 }

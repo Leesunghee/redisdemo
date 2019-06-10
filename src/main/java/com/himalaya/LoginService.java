@@ -1,5 +1,7 @@
 package com.himalaya;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.session.Session;
 import org.springframework.session.data.redis.RedisOperationsSessionRepository;
@@ -7,39 +9,48 @@ import org.springframework.session.data.redis.config.annotation.web.http.EnableR
 import org.springframework.stereotype.Service;
 
 import java.util.Base64;
-import java.util.Optional;
 
 
 @Service
 @EnableRedisHttpSession
 public class LoginService {
 
-//    @Autowired
-//    private ReactiveRedisTemplate<String, String> redisTemplate;
 
     @Autowired
     private RedisOperationsSessionRepository sessionRepository;
 
-    public String getLoginUsername() {
+    public String getSessionValue(String encodedSessionId, String key) {
 
-        String sessionId = "ZDNlY2Q1YmUtNjgyNi00MDNiLWI4Y2YtNmViZTI5NGJmZTZi";
-        String key = "name";
-        String voKey = "userVo";
+        Session session = getStoredRedisSession(sessionIdToBase64Decode(encodedSessionId));
 
-        Session session = getStoredRedisSession(sessionId);
         if (session == null) {
             return "";
         } else {
-            return (String) session.getAttribute(key);
+            return asString(session.getAttribute(key));
         }
     }
 
-    public Session getStoredRedisSession(final String encodedSessionId) {
-        return sessionRepository.findById(sessionIdToBase64Decode(encodedSessionId));
+    public Session getStoredRedisSession(final String decodedSessionId) {
+        return sessionRepository.findById(decodedSessionId);
     }
 
     public String sessionIdToBase64Decode(final String encodedSessionId) {
         byte[] bytes = Base64.getDecoder().decode(encodedSessionId);
         return new String(bytes);
+    }
+
+    public static String asString(Object obj) {
+        ObjectMapper mapper = new ObjectMapper();
+
+        try {
+            String jsonStr = mapper.writeValueAsString(obj);
+
+            System.out.println("jsonStr = " + jsonStr);
+            return jsonStr;
+
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
