@@ -8,7 +8,7 @@ import java.io.Serializable;
 
 @Setter
 @AllArgsConstructor
-public class UserInfo2 implements Serializable {
+public class UserInfo implements Serializable {
 
     private static final long serialVersionUID = -967621291280452430L;
 
