@@ -16,7 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 @RunWith(SpringRunner.class)
-//@WebMvcTest(com.himalaya.LoginController.class)
+//@WebMvcTest(com.himalaya.login.LoginController.class)
 @SpringBootTest
 @AutoConfigureMockMvc
 public class LoginControllerTest {
@@ -25,16 +25,49 @@ public class LoginControllerTest {
     private MockMvc mvc;
 
     @Test
-    public void getSessionValue() throws Exception {
+    public void getSessionKeys() throws Exception {
 
         mvc.perform(MockMvcRequestBuilders
-                .get("/getSessionValue?sessionId=NjYzMGRlYWYtMzQxOC00MDZjLWI5N2QtYTg5Y2U4YTExM2M5&key=userVo")
+                .get("/getSessionKeys?sessionId=Njc1Njc4OTctMWMxOS00YTg2LWI5YTktMWFlMjhlZTIzZDVi")
                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.username").value("himalaya"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.age").value(38));
-
-
+                .andExpect(MockMvcResultMatchers.jsonPath("$.keys").exists());
     }
+
+    @Test
+    public void getSessionValue() throws Exception {
+
+        mvc.perform(MockMvcRequestBuilders
+                .get("/getSessionValue?sessionId=Njc1Njc4OTctMWMxOS00YTg2LWI5YTktMWFlMjhlZTIzZDVi&key=userVo")
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.userVo.username").value("himalaya"));
+    }
+
+    @Test
+    public void getSessionValues() throws Exception {
+
+        mvc.perform(MockMvcRequestBuilders
+                .get("/getSessionValues?sessionId=Njc1Njc4OTctMWMxOS00YTg2LWI5YTktMWFlMjhlZTIzZDVi")
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("sunghee"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.userVo").hasJsonPath())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.userVo.age").value(38));
+    }
+
+    @Test
+    public void deleteSession() throws Exception {
+
+        mvc.perform(MockMvcRequestBuilders
+                .get("/deleteSession?sessionId=Njc1Njc4OTctMWMxOS00YTg2LWI5YTktMWFlMjhlZTIzZDVi")
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.userVo.username").doesNotExist());
+    }
+
 }
