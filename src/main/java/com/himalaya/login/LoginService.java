@@ -8,7 +8,6 @@ import org.springframework.session.SessionRepository;
 import org.springframework.session.data.redis.RedisOperationsSessionRepository;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Method;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
@@ -93,6 +92,7 @@ public class LoginService<S extends Session> {
 
     public void extendSessionExpirationTime(final String encodedSessionId) throws Exception {
         S session = getStoredRedisSession(encodedSessionId);
+
         if (session != null) {
             session.setMaxInactiveInterval(Duration.ofMinutes(30));
             ((SessionRepository) sessionRepository).save(session);

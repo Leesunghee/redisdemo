@@ -1,6 +1,5 @@
 package com.himalaya;
 
-import lombok.Getter;
 import lombok.AllArgsConstructor;
 import lombok.Setter;
 

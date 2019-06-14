@@ -1,9 +1,6 @@
 package com.himalaya.login;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.session.Session;
-import org.springframework.session.SessionRepository;
-import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
