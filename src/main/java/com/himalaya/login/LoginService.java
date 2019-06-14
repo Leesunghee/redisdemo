@@ -5,8 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.session.Session;
 import org.springframework.session.SessionRepository;
+import org.springframework.session.data.redis.RedisOperationsSessionRepository;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Method;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,59 +20,88 @@ import java.util.Map;
 public class LoginService<S extends Session> {
 
     @Autowired
-    private SessionRepository sessionRepository;
+    private RedisOperationsSessionRepository sessionRepository;
 
-    public String getSessionValue(String encodedSessionId, String sessionKey) {
+    public String isValidSession(final String encodedSessionId) {
         Map<String, Object> jsonMap = new HashMap<>();
-        Session session = getStoredRedisSession(encodedSessionId);
+        S session = getStoredRedisSession(encodedSessionId);
 
         if (session != null) {
-            jsonMap.put(sessionKey, session.getAttribute(sessionKey));
+            jsonMap.put("isValidSession", "true");
+        } else {
+            jsonMap.put("isValidSession", "false");
+        }
+        return asString(jsonMap);
+    }
+
+    public String getSessionAttribute(final String encodedSessionId, final String name) {
+        Map<String, Object> jsonMap = new HashMap<>();
+        S session = getStoredRedisSession(encodedSessionId);
+
+        if (session != null) {
+            jsonMap.put(name, session.getAttribute(name));
             return asString(jsonMap);
         }
         return "";
     }
 
-    public String getSessionKeys(String encodedSessionId) {
+    public String getSessionAttributeNames(final String encodedSessionId) {
         Map<String, Object> jsonMap = new HashMap<>();
-        Session session = getStoredRedisSession(encodedSessionId);
+        S session = getStoredRedisSession(encodedSessionId);
 
         if (session != null) {
-            jsonMap.put("keys", session.getAttributeNames());
+            jsonMap.put("names", session.getAttributeNames());
             return asString(jsonMap);
         }
         return "";
     }
 
-    public String getSessionValues(String encodedSessionId) {
+    public String getSessionAllAttributes(final String encodedSessionId) {
         Map<String, Object> jsonMap = new HashMap<>();
-        Session session = getStoredRedisSession(encodedSessionId);
+        S session = getStoredRedisSession(encodedSessionId);
         if (session != null) {
-            for (String sessionKey: session.getAttributeNames()) {
-                jsonMap.put(sessionKey, session.getAttribute(sessionKey));
+            for (String name: session.getAttributeNames()) {
+                jsonMap.put(name, session.getAttribute(name));
             }
             return asString(jsonMap);
         }
         return "";
     }
 
-    public void deleteSession(String encodedSessionId) {
-        Session session = getStoredRedisSession(encodedSessionId);
+    public void deleteSession(final String encodedSessionId) {
+        S session = getStoredRedisSession(encodedSessionId);
         if (session != null) {
             sessionRepository.deleteById(sessionIdToBase64Decode(encodedSessionId));
         }
     }
 
-    public void extendSessionExpirationTime(String encodedSessionId) {
-        Session session = getStoredRedisSession(encodedSessionId);
-        session.setAttribute("test", "11111");
-        sessionRepository.save(session);
-
+    public void setSessionAttribute(final String encodedSessionId, final String name, final Object value) {
+        S session = getStoredRedisSession(encodedSessionId);
+        if (session != null) {
+            session.setAttribute(name, value);
+            ((SessionRepository) sessionRepository).save(session);
+        }
     }
 
-    public String getSessionExpirationTime(String encodedSessionId) {
+    public void removeSessionAttribute(final String encodedSessionId, final String name) {
+        S session = getStoredRedisSession(encodedSessionId);
+        if (session != null) {
+            session.removeAttribute(name);
+            ((SessionRepository) sessionRepository).save(session);
+        }
+    }
+
+    public void extendSessionExpirationTime(final String encodedSessionId) throws Exception {
+        S session = getStoredRedisSession(encodedSessionId);
+        if (session != null) {
+            session.setMaxInactiveInterval(Duration.ofMinutes(30));
+            ((SessionRepository) sessionRepository).save(session);
+        }
+    }
+
+    public String getSessionExpirationTime(final String encodedSessionId) {
         Map<String, Object> jsonMap = new HashMap<>();
-        Session session = getStoredRedisSession(encodedSessionId);
+        S session = getStoredRedisSession(encodedSessionId);
         if (session != null) {
             jsonMap.put("expirationTime", session.getMaxInactiveInterval());
             jsonMap.put("lastAccessTime", session.getLastAccessedTime());
@@ -78,8 +111,13 @@ public class LoginService<S extends Session> {
         return "";
     }
 
-    public Session getStoredRedisSession(final String encodedSessionId) {
-        return sessionRepository.findById(sessionIdToBase64Decode(encodedSessionId));
+    public S getStoredRedisSession(final String encodedSessionId) {
+        S session = (S)sessionRepository.findById(sessionIdToBase64Decode(encodedSessionId));
+        if (session != null) {
+            session.setLastAccessedTime(Instant.now());
+            return session;
+        }
+        return null;
     }
 
     public String sessionIdToBase64Decode(final String encodedSessionId) {
@@ -87,7 +125,7 @@ public class LoginService<S extends Session> {
         return new String(bytes);
     }
 
-    public static String asString(Object obj) {
+    public static String asString(final Object obj) {
         ObjectMapper mapper = new ObjectMapper();
 
         try {
